@@ -243,11 +243,11 @@ const html = `<!doctype html>
   }
   .lang button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
   .toggle { appearance: none; border: 1px solid var(--rule); border-radius: 4px; background: transparent; color: inherit; font: inherit; font-size: .85rem; padding: .2rem .6rem; cursor: pointer; display: none; }
-  .wide { appearance: none; border: 0; background: transparent; color: var(--muted); padding: 0; cursor: pointer; line-height: 0; }
-  .wide:hover { color: var(--ink); }
-  .wide svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-  .wide .in, .wide[aria-pressed="true"] .out { display: none; }
-  .wide[aria-pressed="true"] .in { display: inline; }
+  button.wide { appearance: none; border: 0; background: transparent; color: var(--muted); padding: 0; cursor: pointer; line-height: 0; }
+  button.wide:hover { color: var(--ink); }
+  button.wide svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  button.wide .in, button.wide[aria-pressed="true"] .out { display: none; }
+  button.wide[aria-pressed="true"] .in { display: inline; }
 
   /* sidebar left, content centred on a reading measure, section list right */
   .frame { display: grid; grid-template-columns: var(--sidebar) minmax(0, 1fr) var(--toc); min-height: calc(100vh - 3rem); }
@@ -516,7 +516,7 @@ ${markdownBlocks}
   });
 
   // Full width: the article's measure widens. Nothing else moves. Remembered per browser.
-  var wideButton = document.querySelector('.wide');
+  var wideButton = document.querySelector('button.wide');
   function setWide(on) {
     document.body.classList.toggle('wide', on);
     wideButton.setAttribute('aria-pressed', String(on));
