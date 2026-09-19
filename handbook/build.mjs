@@ -36,10 +36,10 @@ const config = JSON.parse(fs.readFileSync(path.join(root, 'config.json'), 'utf8'
 // language with no entry here is an error: add it before the project uses it.
 const UI = {
   en: { contents: 'Contents', built: 'Built', updated: 'updated', verified: 'verified at',
-        onThisPage: 'On this page', wide: 'Full width',
+        onThisPage: 'On this page', wide: 'Full width', expand: 'Expand', close: 'Close',
         missing: 'This page is not in English yet. The <source> version is shown.' },
   es: { contents: 'Contenido', built: 'Generado', updated: 'actualizado', verified: 'verificado en',
-        onThisPage: 'En esta página', wide: 'Ancho completo',
+        onThisPage: 'En esta página', wide: 'Ancho completo', expand: 'Ampliar', close: 'Cerrar',
         missing: 'Esta página aún no está en español. Se muestra la versión en <source>.' },
 };
 const LANGUAGE_NAMES = { en: { en: 'English', es: 'inglés' }, es: { en: 'Spanish', es: 'español' } };
@@ -285,8 +285,33 @@ const html = `<!doctype html>
   article img, article svg { max-width: 100%; }
   article table { border-collapse: collapse; margin: 0 0 1rem; }
   article th, article td { border: 1px solid var(--rule); padding: .3rem .6rem; text-align: left; }
-  .diagram { margin: 0 0 1rem; }
+  .diagram { margin: 0 0 1rem; position: relative; }
   .diagram pre.mermaid[data-processed] { background: none; padding: 0; overflow: visible; }
+  /* A wide diagram shrinks to fit the column, so it can also be opened full screen. */
+  .diagram .zoom {
+    position: absolute; top: .25rem; right: .25rem; z-index: 1;
+    appearance: none; border: 1px solid var(--rule); border-radius: 4px;
+    background: var(--bg); color: var(--muted); font: inherit; font-size: .75rem;
+    padding: .15rem .5rem; cursor: zoom-in; opacity: 0; transition: opacity .12s;
+    display: none; /* shown once mermaid has drawn the diagram; offline there is none */
+  }
+  .diagram pre.mermaid[data-processed] ~ .zoom { display: block; }
+  .diagram:hover .zoom, .diagram .zoom:focus-visible { opacity: 1; }
+  dialog.lightbox {
+    width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh;
+    margin: 0; padding: 0; border: 0; background: var(--bg); color: var(--ink);
+  }
+  dialog.lightbox::backdrop { background: rgba(0, 0, 0, .6); }
+  dialog.lightbox .sheet { display: flex; flex-direction: column; height: 100%; }
+  dialog.lightbox .close {
+    align-self: flex-end; margin: .6rem .8rem 0;
+    appearance: none; border: 1px solid var(--rule); border-radius: 4px;
+    background: transparent; color: inherit; font: inherit; font-size: .85rem;
+    padding: .2rem .7rem; cursor: pointer;
+  }
+  dialog.lightbox .figure { flex: 1; min-height: 0; overflow: auto; padding: 1rem 1.5rem 2rem; }
+  dialog.lightbox .figure svg { width: 100%; height: auto; max-width: none !important; }
+  @media (prefers-reduced-motion: reduce) { .diagram .zoom { transition: none; } }
   footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .75rem; color: var(--muted); }
 
   @media (max-width: 64rem) {
@@ -326,6 +351,12 @@ const html = `<!doctype html>
     <ul></ul>
   </aside>
 </div>
+<dialog class="lightbox" aria-label="Diagram">
+  <div class="sheet">
+    <button type="button" class="close" data-i18n="close">Close</button>
+    <div class="figure"></div>
+  </div>
+</dialog>
 
 ${markdownBlocks}
 
@@ -385,7 +416,8 @@ ${markdownBlocks}
     },
     code: function (token) {
       if (token.lang !== 'mermaid') return false;
-      return '<div class="diagram"><pre class="mermaid">' + esc(token.text) + '</pre></div>';
+      return '<div class="diagram"><pre class="mermaid">' + esc(token.text) + '</pre>' +
+        '<button type="button" class="zoom" data-i18n="expand"></button></div>';
     }
   };
   function esc(s) {
@@ -478,6 +510,25 @@ ${markdownBlocks}
   }
   wideButton.addEventListener('click', function () { setWide(!document.body.classList.contains('wide')); });
   try { if (localStorage.getItem('handbook.wide')) setWide(true); } catch (e) {}
+
+  // Full screen diagram. The SVG is cloned so the page keeps its own, and the
+  // dialog closes on Escape by itself.
+  var lightbox = document.querySelector('dialog.lightbox');
+  var figure = lightbox.querySelector('.figure');
+  function openDiagram(diagram) {
+    var svg = diagram.querySelector('svg');
+    if (!svg) return; // mermaid has not drawn it, or failed to load
+    figure.innerHTML = '';
+    figure.appendChild(svg.cloneNode(true));
+    lightbox.showModal();
+  }
+  document.querySelector('article').addEventListener('click', function (event) {
+    var button = event.target.closest && event.target.closest('.diagram .zoom');
+    if (button) openDiagram(button.parentNode);
+  });
+  lightbox.querySelector('.close').addEventListener('click', function () { lightbox.close(); });
+  lightbox.addEventListener('click', function (event) { if (event.target === lightbox) lightbox.close(); });
+  lightbox.addEventListener('close', function () { figure.innerHTML = ''; });
 
   function drawDiagrams() {
     var nodes = document.querySelectorAll('pre.mermaid:not([data-processed])');
