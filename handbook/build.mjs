@@ -242,14 +242,15 @@ const html = `<!doctype html>
     font: inherit; font-size: .8rem; letter-spacing: .06em; padding: .2rem .6rem; cursor: pointer;
   }
   .lang button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-  .toggle, .wide { appearance: none; border: 1px solid var(--rule); border-radius: 4px; background: transparent; color: inherit; font: inherit; font-size: .85rem; padding: .2rem .6rem; cursor: pointer; }
-  .toggle { display: none; }
-  .wide[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .toggle { appearance: none; border: 1px solid var(--rule); border-radius: 4px; background: transparent; color: inherit; font: inherit; font-size: .85rem; padding: .2rem .6rem; cursor: pointer; display: none; }
+  .wide { appearance: none; border: 0; background: transparent; color: var(--muted); padding: 0; cursor: pointer; line-height: 0; }
+  .wide:hover { color: var(--ink); }
+  .wide svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .wide .in, .wide[aria-pressed="true"] .out { display: none; }
+  .wide[aria-pressed="true"] .in { display: inline; }
 
   /* sidebar left, content centred on a reading measure, section list right */
   .frame { display: grid; grid-template-columns: var(--sidebar) minmax(0, 1fr) var(--toc); min-height: calc(100vh - 3rem); }
-  body.wide .frame { grid-template-columns: var(--sidebar) minmax(0, 1fr); }
-  body.wide aside { display: none; }
   nav {
     border-right: 1px solid var(--rule); background: var(--panel); padding: 1.25rem 1rem;
     position: sticky; top: 3rem; height: calc(100vh - 3rem); overflow-y: auto;
@@ -268,7 +269,8 @@ const html = `<!doctype html>
     padding: 2.5rem 1.25rem 2rem 0; position: sticky; top: 3rem; height: calc(100vh - 3rem); overflow-y: auto;
     font-size: .85rem;
   }
-  aside h2 { font-size: .72rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 .6rem; }
+  .aside-head { display: flex; align-items: center; gap: .5rem; margin: 0 0 .6rem; }
+  aside h2 { font-size: .72rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 auto 0 0; }
   aside ul { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--rule); }
   aside li a { display: block; padding: .25rem .75rem; margin-left: -2px; border-left: 2px solid transparent; color: var(--muted); text-decoration: none; line-height: 1.35; }
   aside li a:hover { color: var(--ink); }
@@ -315,11 +317,12 @@ const html = `<!doctype html>
   footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .75rem; color: var(--muted); }
 
   @media (max-width: 64rem) {
-    .frame, body.wide .frame { grid-template-columns: var(--sidebar) minmax(0, 1fr); }
-    aside, .wide { display: none; }
+    .frame { grid-template-columns: var(--sidebar) minmax(0, 1fr); }
+    aside { display: none; }
+    main, body.wide main { max-width: none; margin: 0; }
   }
   @media (max-width: 47rem) {
-    .frame, body.wide .frame { grid-template-columns: 1fr; }
+    .frame { grid-template-columns: 1fr; }
     .toggle { display: inline-block; }
     nav { display: none; position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--rule); }
     body.nav-open nav { display: block; }
@@ -333,7 +336,6 @@ const html = `<!doctype html>
 <header class="bar">
   <a class="brand" href="#">${esc(config.title)}</a>
   ${langSwitch}
-  <button type="button" class="wide" aria-pressed="false" data-i18n="wide">Full width</button>
   <button type="button" class="toggle" aria-expanded="false" data-i18n="contents">Contents</button>
 </header>
 <div class="frame">
@@ -347,7 +349,15 @@ const html = `<!doctype html>
     <footer><span data-i18n="built">Built</span> <time datetime="${builtAt}">${builtAt.slice(0, 16).replace('T', ' ')} UTC</time></footer>
   </main>
   <aside aria-label="Sections">
-    <h2 data-i18n="onThisPage">On this page</h2>
+    <div class="aside-head">
+      <h2 data-i18n="onThisPage">On this page</h2>
+      <button type="button" class="wide" aria-pressed="false" data-i18n-label="wide">
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path class="out" d="M6.5 3.5 2 8l4.5 4.5M9.5 3.5 14 8l-4.5 4.5" />
+          <path class="in" d="M1.5 3.5 6 8l-4.5 4.5M14.5 3.5 10 8l4.5 4.5" />
+        </svg>
+      </button>
+    </div>
     <ul></ul>
   </aside>
 </div>
@@ -443,6 +453,10 @@ ${markdownBlocks}
     document.querySelector('article').innerHTML = marked.parse(block.textContent.replace(/<\\\\\\//g, '</'));
 
     document.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = strings[el.dataset.i18n]; });
+    document.querySelectorAll('[data-i18n-label]').forEach(function (el) {
+      el.setAttribute('aria-label', strings[el.dataset.i18nLabel]);
+      el.setAttribute('title', strings[el.dataset.i18nLabel]);
+    });
     document.querySelectorAll('.lang button').forEach(function (button) {
       button.setAttribute('aria-pressed', String(button.dataset.lang === current.lang));
     });
@@ -501,7 +515,7 @@ ${markdownBlocks}
     requestAnimationFrame(function () { markCurrentSection(); ticking = false; });
   });
 
-  // Full width: the article drops its reading measure and the section list hides. Remembered per browser.
+  // Full width: the article drops its reading measure. Nothing else moves. Remembered per browser.
   var wideButton = document.querySelector('.wide');
   function setWide(on) {
     document.body.classList.toggle('wide', on);
