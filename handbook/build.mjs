@@ -263,7 +263,8 @@ const html = `<!doctype html>
   nav a[aria-current="page"] { background: var(--ink); color: var(--bg); }
 
   main { padding: 2.5rem 2rem 4rem; width: 100%; max-width: calc(var(--measure) + 4rem); margin: 0 auto; }
-  body.wide main { max-width: none; margin: 0; }
+  /* Full width widens the measure and nothing else: same centred column, more of it. */
+  body.wide { --measure: 76rem; }
 
   aside {
     padding: 2.5rem 1.25rem 2rem 0; position: sticky; top: 3rem; height: calc(100vh - 3rem); overflow-y: auto;
@@ -319,7 +320,6 @@ const html = `<!doctype html>
   @media (max-width: 64rem) {
     .frame { grid-template-columns: var(--sidebar) minmax(0, 1fr); }
     aside { display: none; }
-    main, body.wide main { max-width: none; margin: 0; }
   }
   @media (max-width: 47rem) {
     .frame { grid-template-columns: 1fr; }
@@ -515,7 +515,7 @@ ${markdownBlocks}
     requestAnimationFrame(function () { markCurrentSection(); ticking = false; });
   });
 
-  // Full width: the article drops its reading measure. Nothing else moves. Remembered per browser.
+  // Full width: the article's measure widens. Nothing else moves. Remembered per browser.
   var wideButton = document.querySelector('.wide');
   function setWide(on) {
     document.body.classList.toggle('wide', on);
