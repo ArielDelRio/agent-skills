@@ -90,28 +90,33 @@ A new area of code — a directory matching one of `config.areas` — gets a new
 - The code is the source of truth, then `config.sourcesOfTruth` in their order, then the Handbook. Write what the code does; take the why and the standards from the project's docs. When they and the code disagree, the code wins: the page says what the code does, and the disagreement is recorded on the progress page, because this skill never edits the project's docs. Never carry a claim from an existing page forward without checking it against the code.
 - A code reference is a Markdown link whose target is the repo-relative path: `[chat.ts](src/main/modules/agent/lib/chat.ts)`. The build prefixes the target with `codeBaseUrl`; with an empty `codeBaseUrl` it renders as plain code. The project's own docs are linked the same way as sources of detail, never copied: the Handbook is its own narrative.
 - The `##` headings of a page are its sections: the browser lists them in "On this page" and gives each an id from its text, lowercased, accents dropped, other characters as dashes. A link to a section of the same page is `[text](#<id>)`; to a section of another page, `[text](#<lang>/<slug>/<id>)` with the source language. Renaming a heading breaks links to it, so search the pages for the old id before renaming.
-- Mix prose with the other forms, as [Text and pictures](#text-and-pictures) says. A page that is a wall of paragraphs is not read.
+- Prose is not the default shape of a page: every section is written in whichever form of [Text and pictures](#text-and-pictures) fits it. Two pages of unbroken paragraphs do not get read, however true they are.
 - The source language is where a page is written. Other languages exist only as translations of it, written by `translate` or refreshed by `add`, `edit` and `sync`.
 
 ## Text and pictures
 
-A page of nothing but paragraphs is hard to take in, and a page decorated with pictures that say nothing is worse. Every form below earns its place by doing something prose does badly, and is used only then.
+The reader skims first and reads second. A wall of paragraphs gives them nothing to land on, so they leave; a page decorated with pictures that say nothing wastes their time instead. So each section is written in the form that carries its content, and prose is only one of them. Reach for a break in the text wherever the content has a shape: a set, a sequence, a comparison, a mechanism. When in doubt between a paragraph and a list, write the list.
+
+"Visual" here is mostly not a drawing. It is any shape that lets the eye find the answer without reading every word: a table, bullets, a numbered sequence, a short `A → B → C` chain in a line of text, a bolded lead-in on each item of a list. A diagram is the last of these forms, not the first.
 
 | Form | Earns its place when | Not for |
 | --- | --- | --- |
-| Prose | The why, the caveat, the invariant, anything with a reason inside it. This is the default. | Comparing several things along the same axes. |
-| A table | Several things share a set of attributes and the reader will compare them: one row per thing, one column per attribute. | Two facts, or a list that has no second column. |
-| A list | The items are a set or a sequence, and their being many is the point. | Three sentences that belong in a paragraph. |
-| A diagram | The shape of a mechanism carries the meaning: who talks to whom, what order things happen in, what state follows what. | What a numbered list already says clearly. |
+| Prose | The why, the caveat, the invariant, anything with a reason inside it. | Comparing several things along the same axes; enumerating a set. |
+| A bullet list | The items are a set and their being many is the point: options, rules, the things in a directory. Give each item a bolded lead-in when the items have names. | Three sentences that belong in a paragraph. |
+| A numbered list | The order is the content: a sequence of steps, a lifecycle, what happens on start. | A set with no order. |
+| A table | Several things share a set of attributes and the reader will compare them: one row per thing, one column per attribute. Two to four columns; a fifth means the table is doing two jobs. | Two facts, or a list that has no second column. |
+| An arrow chain | A short path fits in one line: `renderer → preload → main → Agent`. | More than four or five hops, or anything that branches: that is a diagram. |
+| A diagram | The shape of a mechanism carries the meaning: who talks to whom, in what order, what state follows what. | What a numbered list or an arrow chain already says clearly. |
 
 Diagrams are fenced ` ```mermaid ` blocks. The reader can open one full screen from the control on it, and offline the browser shows the block's source in its place, so its labels have to read as plain text. Keep one diagram to one idea: two small diagrams beat one that shows everything.
 
 The rules that keep this honest:
 
-- A visual **replaces** text, never repeats it. If the paragraph beside a diagram walks through the same arrows, cut the paragraph or cut the diagram.
-- If you cannot say what the reader takes from a visual that the prose did not already give them, it is decoration. Delete it.
-- A page with no visual at all is fine when nothing on it has a shape worth drawing. A page with several is fine too, when it earns them. Neither a quota nor a cap.
-- Put each one next to the text it serves, not in a gallery at the end.
+- **A visual replaces text, never repeats it.** If the paragraph beside a diagram walks through the same arrows, cut the paragraph or cut the diagram.
+- **Decoration is deleted.** If you cannot say what the reader takes from a visual that the prose did not already give them, it is decoration.
+- **No quota, no cap.** A page with no diagram is fine when nothing on it has a shape worth drawing; several are fine when each is earned. But a page with no break of any kind — no list, no table, no arrow chain — is a page that was written without asking what shape its content has. Go back and ask.
+- **Three paragraphs in a row is the limit** before you check whether one of them is really a list or a table. A section that runs past about two hundred words without a break usually is.
+- **Each one sits next to the text it serves**, not in a gallery at the end.
 - The Handbook is a single file that opens offline, so the forms above are all there is: no screenshots, no icons, no images.
 
 ## Build
