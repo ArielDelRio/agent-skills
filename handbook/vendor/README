@@ -1,0 +1,4 @@
+marked.min.js: marked 18.0.13, lib/marked.umd.js minified by jsDelivr.
+Source: https://cdn.jsdelivr.net/npm/marked@18.0.13/lib/marked.umd.min.js
+The bare https://cdn.jsdelivr.net/npm/marked/marked.min.js still serves 15.0.12,
+because marked 16+ stopped publishing a root marked.min.js; do not use it.
